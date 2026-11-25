@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: docproc
+    ports:
+      - "5432:5432"
+    volumes:
+      # Run once while the volume is still empty, in file name order.
+      - ./db/init-test-db.sql:/docker-entrypoint-initdb.d/00-init-test-db.sql:ro
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      # Over TCP, not the unix socket. While the init scripts run, the
+      # temporary server only listens on the socket, so a socket check
+      # reports "healthy" before port 5432 is usable and the schema exists.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d docproc"]
+      interval: 2s
+      timeout: 3s
+      retries: 20

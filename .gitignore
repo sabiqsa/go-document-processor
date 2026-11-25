@@ -1,0 +1,6 @@
+/docproc-server
+*.test
+*.out
+coverage.*
+.env
+.DS_Store
